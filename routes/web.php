@@ -12,6 +12,15 @@ use App\Http\Controllers\StockEntryController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardController; // Agregar controlador de Dashboard
 use Illuminate\Support\Facades\Route;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+Route::get('/prueba-pdf', function () {
+    $data = ['title' => 'Prueba PDF', 'content' => 'Este es un contenido de prueba'];
+    $pdf = Pdf::loadView('pdf.prueba', $data);
+
+    return $pdf->download('prueba.pdf');
+});
+
 
 /*
 |--------------------------------------------------------------------------
@@ -52,9 +61,7 @@ Route::middleware('auth')->group(function () {
 
     // Rutas de ingresos de stock (Ingresar stock)
     Route::resource('stock_entries', StockEntryController::class);
-    Route::get('/buscar-productos', [StockEntryController::class, 'searchProducts']);
-    // Ruta para el índice de entradas de stock
-    Route::get('/stock-entries', [StockEntryController::class, 'index'])->name('stock_entries.index');
+    Route::get('/buscar-productos', [StockEntryController::class, 'searchProducts'])->name('stock_entries.search_products');
 
     // Rutas de clientes (Gestionar clientes)
     Route::resource('customers', CustomerController::class);

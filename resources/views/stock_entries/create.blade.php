@@ -53,8 +53,8 @@
                                 <input type="file" id="document" name="document" class="form-control" accept="image/*,application/pdf">
                             </div>
 
-                            <button type="button" id="previewModalButton" class="btn btn-warning mt-4" data-bs-toggle="modal" data-bs-target="#confirmModal">Previsualizar</button>
-                            <button type="submit" class="btn btn-primary mt-4">Guardar Stock</button>
+
+                            <button type="button" id="previewModalButton" class="btn btn-warning mt-4" data-bs-toggle="modal" data-bs-target="#confirmModal">Guardar Stock</button>
                         </form>
                     </div>
                 </div>
@@ -87,97 +87,136 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-    let total = 0;
+        let total = 0;
 
-    // Buscar productos
-    $('#productSearch').on('input', function () {
-    const query = $(this).val();
-    if (query.length > 2) {
-        $.ajax({
-            url: '/buscar-productos',
-            type: 'GET',
-            data: { query },
-            success: function (response) {
-                if (response && Array.isArray(response)) {
-                    $('#productSuggestions').empty().show();
-                    response.forEach(product => {
-                        // Formatear correctamente la categoría en la sugerencia
-                        const category = product.category ? product.category : 'Sin categoría';
-                        $('#productSuggestions').append(`
-                            <div class="list-group-item suggestion"
-                                 data-id="${product.id}"
-                                 data-name="${product.name}"
-                                 data-category="${category}"
-                                 data-price="${product.purchase_price}">
-                                ${product.name} (${category})
-                            </div>
-                        `);
-                    });
-                }
-            },
-            error: function (error) {
-                console.error('Error al buscar productos:', error);
+        // Buscar productos
+        $('#productSearch').on('input', function () {
+            const query = $(this).val();
+            if (query.length > 2) {
+                $.ajax({
+                    url: '{{ route("stock_entries.search_products") }}',
+                    type: 'GET',
+                    data: { query },
+                    success: function (response) {
+                        if (response && Array.isArray(response)) {
+                            $('#productSuggestions').empty().show();
+                            response.forEach(product => {
+                                const category = product.category ? product.category : 'Sin categoría';
+                                $('#productSuggestions').append(`
+                                    <div class="list-group-item suggestion"
+                                         data-id="${product.id}"
+                                         data-name="${product.name}"
+                                         data-category="${category}"
+                                         data-price="${product.purchase_price}">
+                                        ${product.name} (${category})
+                                    </div>
+                                `);
+                            });
+                        }
+                    },
+                    error: function (error) {
+                        console.error('Error al buscar productos:', error);
+                    }
+                });
+            } else {
+                $('#productSuggestions').hide();
             }
         });
-    } else {
-        $('#productSuggestions').hide();
-    }
-});
 
+        // Agregar producto a la lista
+        $('#productSuggestions').on('mousedown', '.suggestion', function () {
+            const id = $(this).data('id');
+            const name = $(this).data('name');
+            const category = $(this).data('category');
+            let price = parseFloat($(this).data('price'));
+            if (isNaN(price)) price = 0;
 
-    // Agregar producto a la lista
-    $('#productSuggestions').on('mousedown', '.suggestion', function () {
-        const id = $(this).data('id');
-        const name = $(this).data('name');
-        const category = $(this).data('category');
-        let price = parseFloat($(this).data('price')); // Convertir el precio a número
+            // Evitar duplicados
+            if ($(`#productList tr[data-id="${id}"]`).length > 0) {
+                alert('El producto ya está en la lista.');
+                return;
+            }
 
-        if (isNaN(price)) price = 0; // Si el precio no es válido, asignar 0 por defecto
+            $('#productList').append(`
+                <tr data-id="${id}">
+                    <td>${name}</td>
+                    <td>${category}</td>
+                    <td>
+                        <input type="hidden" name="products[${id}][id]" value="${id}">
+                        <input type="number" name="products[${id}][quantity]" class="form-control quantity" min="1" value="1">
+                    </td>
+                    <td><input type="number" name="products[${id}][purchase_price]" class="form-control price" min="0" step="0.01" value="${price.toFixed(2)}"></td>
+                    <td class="subtotal">$${price.toFixed(2)}</td>
+                    <td><button type="button" class="btn btn-danger btn-sm remove-product">Eliminar</button></td>
+                </tr>
+            `);
 
-        $('#productList').append(`
-            <tr data-id="${id}">
-                <td>${name}</td>
-                <td>${category}</td>
-                <td><input type="number" name="products[${id}][quantity]" class="form-control quantity" min="1" value="1"></td>
-                <td><input type="number" name="products[${id}][purchase_price]" class="form-control price" min="0" step="0.01" value="${price.toFixed(2)}"></td>
-                <td class="subtotal">$${price.toFixed(2)}</td>
-                <td><button type="button" class="btn btn-danger btn-sm remove-product">Eliminar</button></td>
-            </tr>
-        `);
-
-        calculateTotal();
-        $('#productSearch').val('');
-        $('#productSuggestions').hide();
-    });
-
-    // Calcular total
-    function calculateTotal() {
-        total = 0;
-        $('#productList tr').each(function () {
-            const quantity = parseInt($(this).find('.quantity').val()) || 0;
-            const price = parseFloat($(this).find('.price').val()) || 0;
-            const subtotal = quantity * price;
-            $(this).find('.subtotal').text(`$${subtotal.toFixed(2)}`);
-            total += subtotal;
+            calculateTotal();
+            $('#productSearch').val('');
+            $('#productSuggestions').hide();
         });
-        $('#total').text(total.toFixed(2));
-        $('#modalTotal').text(total.toFixed(2));
-    }
 
-    // Actualizar total al cambiar cantidad o precio
-    $(document).on('input', '.quantity, .price', calculateTotal);
+        // Calcular total
+        function calculateTotal() {
+            total = 0;
+            $('#productList tr').each(function () {
+                const quantity = parseInt($(this).find('.quantity').val()) || 0;
+                const price = parseFloat($(this).find('.price').val()) || 0;
+                const subtotal = quantity * price;
+                $(this).find('.subtotal').text(`$${subtotal.toFixed(2)}`);
+                total += subtotal;
+            });
+            $('#total').text(total.toFixed(2));
+            $('#modalTotal').text(total.toFixed(2));
+        }
 
-    // Eliminar producto
-    $(document).on('click', '.remove-product', function () {
-        $(this).closest('tr').remove();
-        calculateTotal();
+        // Actualizar total al cambiar cantidad o precio
+        $(document).on('input', '.quantity, .price', calculateTotal);
+
+        // Eliminar producto
+        $(document).on('click', '.remove-product', function () {
+            $(this).closest('tr').remove();
+            calculateTotal();
+        });
+
+        // Previsualizar ingreso
+        $('#previewModalButton').on('click', function () {
+            $('#modalTotal').text(total.toFixed(2));
+            $('#confirmModal').modal('show');
+        });
+
+        // Confirmar ingreso y enviar el formulario
+        $('#confirmButton').on('click', function () {
+            const formData = new FormData(document.getElementById('stockForm'));
+
+            $.ajax({
+                url: "{{ route('stock_entries.store') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    
+                        if (response.pdf_url) {
+                         window.open(response.pdf_url, '_blank'); // Abre el PDF generado
+                       // }
+                       location.reload(); // Recarga la página
+                   } else {
+                     alert('Ocurrió un error al ingresar el stock.');
+                  }
+                console.log(response)
+                },
+                error: function (xhr) {
+                    console.error('Error al procesar el formulario:', xhr.responseText);
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        const errors = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                        alert(`Error al procesar el formulario:\n${errors}`);
+                    } else {
+                        alert('Error desconocido al procesar el formulario.');
+                    }
+                }
+            });
+        });
     });
-
-    // Confirmar ingreso
-    $('#confirmButton').on('click', function () {
-        $('#stockForm').submit();
-    });
-});
-
 </script>
 @endpush
