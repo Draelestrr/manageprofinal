@@ -169,6 +169,9 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
+       // Intervention\Image\ImageServiceProvider::class,
+
+
     ])->toArray(),
 
     /*
@@ -184,7 +187,8 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         'Pdf' => Barryvdh\DomPDF\Facade\Pdf::class,
-        // 'Example' => App\Facades\Example::class,
+      // 'Image' => Intervention\Image\Facades\Image::class,
+
     ])->toArray(),
 
 ];

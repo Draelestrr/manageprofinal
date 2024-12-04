@@ -82,6 +82,24 @@
         </div>
     </div>
 </div>
+<!-- Modal para previsualización de PDF -->
+<div class="modal fade" id="pdfPreviewModal" tabindex="-1" aria-labelledby="pdfPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pdfPreviewModalLabel">Vista Previa del Comprobante</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdfPreviewFrame" src="" width="100%" height="500px"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="#" id="downloadPdfLink" class="btn btn-primary" download>Descargar PDF</a>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -196,15 +214,22 @@
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    
-                        if (response.pdf_url) {
-                         window.open(response.pdf_url, '_blank'); // Abre el PDF generado
-                       // }
-                       location.reload(); // Recarga la página
-                   } else {
-                     alert('Ocurrió un error al ingresar el stock.');
-                  }
-                console.log(response)
+                    if (response.pdf_url) {
+                        // Abrir modal de previsualización de PDF
+                        $('#pdfPreviewFrame').attr('src', response.pdf_url);
+                        $('#downloadPdfLink').attr('href', response.pdf_url);
+
+                        // Mostrar modal
+                        $('#pdfPreviewModal').modal('show');
+
+                        // Opcional: recargar página después de un tiempo
+                        setTimeout(() => {
+                            location.reload();
+                        }, 8000); // Recarga después de 8 segundos
+                    } else {
+                        alert('Ocurrió un error al ingresar el stock.');
+                    }
+                    console.log(response);
                 },
                 error: function (xhr) {
                     console.error('Error al procesar el formulario:', xhr.responseText);
@@ -220,3 +245,4 @@
     });
 </script>
 @endpush
+

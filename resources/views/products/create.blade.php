@@ -15,6 +15,12 @@
     border-color: #ff4081;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
+
+  .text-danger {
+    color: red;
+    font-size: 0.85em;
+    margin-top: 5px;
+  }
 </style>
 @endpush
 
@@ -47,6 +53,7 @@
                   <div class="text-danger">{{ $message }}</div>
                 @enderror
               </div>
+
               <!-- Categoría -->
               <div class="mb-3">
                 <label for="category_id" class="form-label">Categoría</label>
@@ -57,28 +64,33 @@
                       <option value="{{ $category->id }}">{{ $category->name }}</option>
                     @endforeach
                   </select>
-                  <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">Agregar</button>
+                  <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                    <i class="fas fa-plus"></i> Agregar
+                  </button>
                 </div>
                 @error('category_id')
                   <div class="text-danger">{{ $message }}</div>
                 @enderror
               </div>
+
               <!-- Proveedor -->
-                <div class="mb-3">
-                    <label for="supplier_id" class="form-label">Proveedor</label>
-                    <div class="input-group">
-                        <select class="form-select" id="supplier_id" name="supplier_id" required>
-                            <option value="" selected disabled>Selecciona un proveedor</option>
-                            @foreach($suppliers as $supplier)
-                                <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
-                            @endforeach
-                        </select>
-                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addSupplierModal">Agregar</button>
+              <div class="mb-3">
+                <label for="supplier_id" class="form-label">Proveedor</label>
+                <div class="input-group">
+                  <select class="form-select" id="supplier_id" name="supplier_id" required>
+                    <option value="" selected disabled>Selecciona un proveedor</option>
+                    @foreach($suppliers as $supplier)
+                      <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                    @endforeach
+                  </select>
+                  <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+                    <i class="fas fa-plus"></i> Agregar
+                  </button>
                 </div>
                 @error('supplier_id')
-                    <div class="text-danger">{{ $message }}</div>
+                  <div class="text-danger">{{ $message }}</div>
                 @enderror
-                </div>
+              </div>
 
               <!-- Precios y Stock -->
               <div class="row mb-3">
@@ -90,6 +102,7 @@
                     <div class="text-danger">{{ $message }}</div>
                   @enderror
                 </div>
+
                 <!-- Precio de Venta -->
                 <div class="col-md-4">
                   <label for="sale_price" class="form-label">Precio de Venta</label>
@@ -98,6 +111,7 @@
                     <div class="text-danger">{{ $message }}</div>
                   @enderror
                 </div>
+
                 <!-- Stock -->
                 <div class="col-md-4">
                   <label for="stock" class="form-label">Stock</label>
@@ -107,6 +121,7 @@
                   @enderror
                 </div>
               </div>
+
               <!-- Stock Mínimo y Imagen -->
               <div class="row mb-3">
                 <div class="col-md-6">
@@ -116,6 +131,7 @@
                     <div class="text-danger">{{ $message }}</div>
                   @enderror
                 </div>
+
                 <div class="col-md-6">
                   <label for="image" class="form-label">Imagen del Producto</label>
                   <input type="file" class="form-control" id="image" name="image" accept="image/*">
@@ -124,6 +140,7 @@
                   @enderror
                 </div>
               </div>
+
               <button type="submit" class="btn btn-primary">Guardar Producto</button>
             </form>
           </div>
@@ -133,13 +150,13 @@
   </div>
 </div>
 
-<!-- Modales -->
+<!-- Modal Agregar Categoría -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Agregar Nueva Categoría</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h5 class="modal-title" id="addCategoryModalLabel">Agregar Nueva Categoría</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form id="categoryForm">
@@ -152,19 +169,20 @@
             <label for="category_description" class="form-label">Descripción</label>
             <textarea class="form-control" id="category_description" name="description"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">Guardar</button>
+          <button type="submit" class="btn btn-primary">Guardar Categoría</button>
         </form>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Modal Agregar Proveedor -->
 <div class="modal fade" id="addSupplierModal" tabindex="-1" aria-labelledby="addSupplierModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Agregar Nuevo Proveedor</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h5 class="modal-title" id="addSupplierModalLabel">Agregar Nuevo Proveedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form id="supplierForm">
@@ -179,44 +197,87 @@
           </div>
           <div class="mb-3">
             <label for="supplier_email" class="form-label">Correo Electrónico</label>
-            <input type="email" class="form-control" id="supplier_email" name="email">
+            <input type="email" class="form-control" id="supplier_email" name="email" required>
           </div>
           <div class="mb-3">
             <label for="supplier_phone" class="form-label">Teléfono</label>
-            <input type="text" class="form-control" id="supplier_phone" name="phone">
+            <input type="text" class="form-control" id="supplier_phone" name="phone" required>
           </div>
-          <button type="submit" class="btn btn-primary">Guardar</button>
+          <button type="submit" class="btn btn-primary">Guardar Proveedor</button>
         </form>
       </div>
     </div>
   </div>
 </div>
-
 @endsection
+
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const csrfMetaTag = document.querySelector('meta[name="csrf-token"]');
-        const csrfToken = csrfMetaTag ? csrfMetaTag.getAttribute('content') : '';
+        // Función para manejar el envío de formularios ajax
+        function handleFormSubmit(formId, route, updateFunction) {
+            const form = document.getElementById(formId);
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const formData = new FormData(this);
+
+                fetch(route, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Llamar a la función de actualización
+                        updateFunction();
+
+                        // Resetear el formulario
+                        form.reset();
+
+                        // Cerrar el modal
+                        const modalElement = form.closest('.modal');
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+
+                        // Mostrar notificación de éxito
+                        showNotification(data.message || 'Operación realizada con éxito', 'success');
+                    } else {
+                        // Mostrar error
+                        showNotification(data.message || 'Error en la operación', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Ocurrió un error', 'error');
+                });
+            });
+        }
 
         // Función para actualizar categorías
-        const updateCategories = () => {
+        function updateCategories() {
             fetch('/categories', {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                },
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
-                return response.json();
             })
+            .then(response => response.json())
             .then(data => {
                 const categorySelect = document.getElementById('category_id');
                 categorySelect.innerHTML = '<option value="" selected disabled>Selecciona una categoría</option>';
+
                 data.forEach(category => {
                     const option = document.createElement('option');
                     option.value = category.id;
@@ -224,27 +285,26 @@
                     categorySelect.appendChild(option);
                 });
             })
-            .catch(error => console.error('Error al actualizar categorías:', error));
-        };
+            .catch(error => {
+                console.error('Error al actualizar categorías:', error);
+                showNotification('Error al cargar categorías', 'error');
+            });
+        }
 
         // Función para actualizar proveedores
-        const updateSuppliers = () => {
+        function updateSuppliers() {
             fetch('/suppliers', {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                },
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
-                return response.json();
             })
+            .then(response => response.json())
             .then(data => {
                 const supplierSelect = document.getElementById('supplier_id');
                 supplierSelect.innerHTML = '<option value="" selected disabled>Selecciona un proveedor</option>';
+
                 data.forEach(supplier => {
                     const option = document.createElement('option');
                     option.value = supplier.id;
@@ -252,70 +312,35 @@
                     supplierSelect.appendChild(option);
                 });
             })
-            .catch(error => console.error('Error al actualizar proveedores:', error));
-        };
+            .catch(error => {
+                console.error('Error al actualizar proveedores:', error);
+                showNotification('Error al cargar proveedores', 'error');
+            });
+        }
 
-        // Manejar envío del formulario de categorías
-        document.getElementById('categoryForm').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            fetch('/categories', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                },
-                body: formData,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    updateCategories();
-                    this.reset();
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
-                    modal.hide();
-                } else {
-                    alert(data.message || 'Error al guardar la categoría.');
-                }
-            })
-            .catch(error => console.error('Error al guardar la categoría:', error));
+        // Configurar manejadores de formularios
+        handleFormSubmit('categoryForm', '/categories', updateCategories);
+        handleFormSubmit('supplierForm', '/suppliers', updateSuppliers);
+
+        // Función para calcular precio de venta automáticamente
+        document.getElementById('purchase_price').addEventListener('input', function() {
+            const purchasePrice = parseFloat(this.value);
+            if (!isNaN(purchasePrice)) {
+                const salePrice = purchasePrice * 1.3; // Margen de ganancia del 30%
+                document.getElementById('sale_price').value = salePrice.toFixed(2);
+            }
         });
 
-        // Manejar envío del formulario de proveedores
-        document.getElementById('supplierForm').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            fetch('/suppliers', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                },
-                body: formData,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    updateSuppliers();
-                    this.reset();
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('addSupplierModal'));
-                    modal.hide();
-                } else {
-                    alert(data.message || 'Error al guardar el proveedor.');
-                }
-            })
-            .catch(error => console.error('Error al guardar el proveedor:', error));
-        });
+        // Función de notificación (asegúrate de que esté definida en tu layout)
+        function showNotification(message, type = 'success') {
+            // Implementación de notificación
+            // Puedes usar toastr, una función personalizada o alert como fallback
+            if (window.toastr && window.toastr[type]) {
+                window.toastr[type](message);
+            } else {
+                alert(message);
+            }
+        }
     });
 </script>
 @endpush
