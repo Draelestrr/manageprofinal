@@ -38,10 +38,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Categorías
-    Route::resource('categories', CategoryController::class)->only(['index', 'store']);
+    Route::resource('categories', CategoryController::class);
     Route::post('/products/create-category', [ProductController::class, 'createCategory'])
         ->name('products.createCategory');
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('/api/categories/{category}/products', [CategoryController::class, 'getProducts']);
+
 
     // Proveedores
     Route::resource('suppliers', SupplierController::class);

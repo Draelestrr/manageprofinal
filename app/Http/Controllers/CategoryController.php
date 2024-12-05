@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Category;
@@ -18,6 +17,7 @@ class CategoryController extends Controller
             return response()->json(Category::all(), 200);
         }
 
+        // Recuperar todas las categorías para mostrar en la vista
         $categories = Category::all();
         return view('categories.index', compact('categories'));
     }
@@ -36,34 +36,38 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-    ]);
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
 
-    try {
-        $category = Category::create($validated);
+        try {
+            // Crear la nueva categoría
+            $category = Category::create($validated);
 
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'category' => $category,
-            ]);
+            // Si es una solicitud AJAX, devolver la nueva categoría como JSON
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'category' => $category,
+                ]);
+            }
+
+            // Si no es una solicitud AJAX, redirigir con un mensaje de éxito
+            return redirect()->route('categories.index')->with('success', 'Categoría creada con éxito.');
+        } catch (\Exception $e) {
+            // Manejo de errores en caso de que la creación falle
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al guardar la categoría.',
+                ], 500);
+            }
+
+            return redirect()->route('categories.index')->withErrors('Error al guardar la categoría.');
         }
-
-        return redirect()->route('categories.index')->with('success', 'Categoría creada con éxito.');
-    } catch (\Exception $e) {
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al guardar la categoría.',
-            ], 500);
-        }
-
-        return redirect()->route('categories.index')->withErrors('Error al guardar la categoría.');
     }
-    }
-
 
     /**
      * Mostrar una categoría específica.
@@ -87,11 +91,13 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
+        // Validar los datos del formulario
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
 
+        // Actualizar la categoría con los nuevos datos
         $category->update($validated);
 
         // Si es una solicitud AJAX, devolver JSON
@@ -109,6 +115,7 @@ class CategoryController extends Controller
      */
     public function destroy(Request $request, Category $category)
     {
+        // Eliminar la categoría
         $category->delete();
 
         // Si es una solicitud AJAX, devolver JSON
@@ -119,4 +126,14 @@ class CategoryController extends Controller
         // Respuesta estándar para solicitudes tradicionales
         return redirect()->route('categories.index')->with('success', 'Categoría eliminada con éxito');
     }
+    public function getProducts(Category $category)
+{
+    // Obtener los productos asociados a la categoría
+    $products = $category->products;  // Asegúrate de que tu relación entre Category y Product esté bien definida
+
+    return response()->json([
+        'products' => $products
+    ]);
+}
+
 }
