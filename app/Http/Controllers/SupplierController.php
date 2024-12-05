@@ -18,7 +18,9 @@ class SupplierController extends Controller
             return response()->json(Supplier::all());
         }
 
-        $suppliers = Supplier::with('products')->get();
+        // Puedes optar por no cargar los productos si no los necesitas inmediatamente
+        $suppliers = Supplier::with('products')->get(); // Traer productos si es necesario
+
         return view('suppliers.index', compact('suppliers'));
     }
 
@@ -85,7 +87,10 @@ class SupplierController extends Controller
      */
     public function destroy(Supplier $supplier)
     {
-        $supplier->products()->detach();
+        // Desvincular productos del proveedor antes de eliminar
+        $supplier->products()->detach(); // Desvincular productos del proveedor
+
+        // Eliminar el proveedor
         $supplier->delete();
 
         return redirect()->route('suppliers.index')->with('success', 'Proveedor eliminado con éxito.');

@@ -17,10 +17,10 @@ class Supplier extends Model
         'address'
     ];
 
-    // Relación muchos a muchos con productos
+   // En app/Models/Supplier.php
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'product_supplier')
-                    ->withTimestamps();
+    return $this->hasMany(Product::class);  // Un proveedor puede tener varios productos
     }
+
 }

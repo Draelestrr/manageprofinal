@@ -10,71 +10,73 @@ use App\Http\Controllers\ExtraChargeController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StockEntryController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\DashboardController; // Agregar controlador de Dashboard
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 Route::get('/prueba-pdf', function () {
     $data = ['title' => 'Prueba PDF', 'content' => 'Este es un contenido de prueba'];
     $pdf = Pdf::loadView('pdf.prueba', $data);
-
     return $pdf->download('prueba.pdf');
 });
-
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Aquí es donde puede registrar rutas web para su aplicación. Estas
-| rutas están cargadas por el RouteServiceProvider y contienen el
-| grupo de middleware "web".
-|
-*/
 
 // Página principal: redirige al login si no está autenticado
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Dashboard: protege la ruta por autenticación y verificación, y usa el controlador DashboardController
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+// Dashboard
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 // Rutas protegidas por autenticación
 Route::middleware('auth')->group(function () {
-
-    // Perfil del usuario autenticado
+    // Perfil de usuario
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Rutas de categorías (Administrar categorías)
+    // Categorías
     Route::resource('categories', CategoryController::class)->only(['index', 'store']);
+    Route::post('/products/create-category', [ProductController::class, 'createCategory'])
+        ->name('products.createCategory');
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 
-    // Rutas de proveedores (Administrar proveedores)
+    // Proveedores
     Route::resource('suppliers', SupplierController::class);
+    Route::post('/products/create-supplier', [ProductController::class, 'createSupplier'])
+        ->name('products.createSupplier');
+    Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
 
-    // Rutas de productos e inventario
+    // Productos
     Route::resource('products', ProductController::class);
+    Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
     Route::patch('products/{product}', [ProductController::class, 'update'])->name('products.update');
 
-    // Rutas de ingresos de stock (Ingresar stock)
+    // Ingresos de stock
     Route::resource('stock_entries', StockEntryController::class);
-    Route::get('/buscar-productos', [StockEntryController::class, 'searchProducts'])->name('stock_entries.search_products');
+    Route::get('/buscar-productos', [StockEntryController::class, 'searchProducts'])
+        ->name('stock_entries.search_products');
 
-    // Rutas de clientes (Gestionar clientes)
+    // Clientes
     Route::resource('customers', CustomerController::class);
 
-    // Rutas de ventas (Gestionar ventas)
+    // Ventas
     Route::resource('sales', SaleController::class);
 
-    // Rutas de gastos (Gestionar gastos y cargos adicionales)
+    // Gastos y cargos adicionales
     Route::resource('expenses', ExpenseController::class);
     Route::resource('extra-charges', ExtraChargeController::class);
 
-    // Rutas de reportes (Generales y personales)
+    // Reportes
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
+    // API endpoints para búsqueda y actualización dinámica
+    Route::prefix('api')->group(function () {
+        Route::get('/categories', [CategoryController::class, 'getAll'])->name('api.categories.all');
+        Route::get('/suppliers', [SupplierController::class, 'getAll'])->name('api.suppliers.all');
+    });
 });
 
 require __DIR__.'/auth.php';

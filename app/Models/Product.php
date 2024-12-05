@@ -25,12 +25,13 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    // Relación muchos a muchos con proveedores
+
+   //relacion un proveedor a muchos productos
     public function suppliers()
     {
-        return $this->belongsToMany(Supplier::class, 'product_supplier')
-                    ->withTimestamps();
+    return $this->belongsToMany(Supplier::class);
     }
+
 
     // Relación con entradas de stock
     public function stockEntries()
