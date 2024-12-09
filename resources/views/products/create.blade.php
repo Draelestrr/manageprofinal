@@ -47,7 +47,7 @@
         margin-right: 5px;
     }
 
-    /* Opcional: Ajustar el tamaño del botón si es necesario */
+    /* Ajustar el tamaño del botón si es necesario */
     .btn-add {
         min-width: 100px; /* Ajusta según tus necesidades */
     }
@@ -102,21 +102,27 @@
                         <!-- Proveedor -->
                         <div class="col-md-6">
                             <label for="supplier_id" class="form-label">Proveedor <span class="text-danger">*</span></label>
-                            <select class="form-select" id="supplier_id" name="supplier_id" required>
-                                <option value="" selected disabled>Selecciona un proveedor</option>
-                                @foreach($suppliers as $supplier)
-                                    <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>
-                                        {{ $supplier->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <button type="button" class="btn btn-secondary btn-add ms-3" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
-                                <i class="fas fa-plus"></i> Agregar
-                            </button>
+                            <div class="d-flex">
+                                <select class="form-select" id="supplier_id" name="supplier_id" required>
+                                    <option value="" selected disabled>Selecciona un proveedor</option>
+                                    @foreach($suppliers as $supplier)
+                                        <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>
+                                            {{ $supplier->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <!-- Botón para agregar un nuevo proveedor -->
+                                <button type="button" class="btn btn-secondary btn-add ms-3" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+                                    <i class="fas fa-plus"></i> Agregar
+                                </button>
+                            </div>
                             @error('supplier_id')
                                 <div class="text-danger">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        <!-- Otros campos si es necesario -->
+                        <!-- Puedes agregar más campos aquí -->
                     </div>
                 </div>
 
@@ -191,18 +197,16 @@
 </div>
 
 <!-- Modal Agregar Categoría -->
-<!-- Modal Agregar Categoría -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <!-- Contenido del modal para agregar categoría -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="addCategoryModalLabel">Agregar Nueva Categoría</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="categoryForm">
-                    @csrf
+            <form id="categoryForm">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCategoryModalLabel">Agregar Nueva Categoría</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
                     <div class="mb-3">
                         <label for="category_name" class="form-label">Nombre de Categoría <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="category_name" name="name" required>
@@ -211,31 +215,28 @@
                         <label for="category_description" class="form-label">Descripción</label>
                         <textarea class="form-control" id="category_description" name="description" rows="3"></textarea>
                     </div>
-                    <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn btn-success d-flex align-items-center">
-                            <i class="fas fa-plus me-2"></i> Guardar Categoría
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success d-flex align-items-center">
+                        <i class="fas fa-plus me-2"></i> Guardar Categoría
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-
-<!-- Modal Agregar Proveedor -->
 <!-- Modal Agregar Proveedor -->
 <div class="modal fade" id="addSupplierModal" tabindex="-1" aria-labelledby="addSupplierModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <!-- Contenido del modal para agregar proveedor -->
-            <div class="modal-header">
-                <h5 class="modal-title" id="addSupplierModalLabel">Agregar Nuevo Proveedor</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="supplierForm">
-                    @csrf
+            <form id="supplierForm">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSupplierModalLabel">Agregar Nuevo Proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
                     <div class="mb-3">
                         <label for="supplier_name" class="form-label">Nombre del Proveedor <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="supplier_name" name="name" required>
@@ -252,17 +253,16 @@
                         <label for="supplier_phone" class="form-label">Teléfono <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="supplier_phone" name="phone" required>
                     </div>
-                    <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn btn-success d-flex align-items-center">
-                            <i class="fas fa-plus me-2"></i> Guardar Proveedor
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success d-flex align-items-center">
+                        <i class="fas fa-plus me-2"></i> Guardar Proveedor
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
 
 @endsection
 

@@ -87,12 +87,8 @@ class SupplierController extends Controller
      */
     public function destroy(Supplier $supplier)
     {
-        // Desvincular productos del proveedor antes de eliminar
-        $supplier->products()->detach(); // Desvincular productos del proveedor
-
-        // Eliminar el proveedor
-        $supplier->delete();
-
-        return redirect()->route('suppliers.index')->with('success', 'Proveedor eliminado con éxito.');
+    $supplier->delete(); // Esto automáticamente establecerá 'supplier_id' a null en productos
+    return redirect()->route('suppliers.index')->with('success', 'Proveedor eliminado con éxito.');
     }
+
 }

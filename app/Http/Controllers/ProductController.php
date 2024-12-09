@@ -6,7 +6,6 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use App\Traits\ImageUploadTrait;
 
 class ProductController extends Controller
@@ -18,12 +17,11 @@ class ProductController extends Controller
      */
     public function index()
     {
-    $products = Product::with('category', 'suppliers')->get();
-    $categories = Category::all();
-    $suppliers = Supplier::all();
-    return view('products.index', compact('products', 'categories', 'suppliers'));
+        $products = Product::with('category', 'supplier')->paginate(15);
+        $categories = Category::all();
+        $suppliers = Supplier::all();
+        return view('products.index', compact('products', 'categories', 'suppliers'));
     }
-
 
     /**
      * Mostrar el formulario para crear un nuevo producto.
@@ -40,37 +38,46 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-    $validatedData = $request->validate([
-        'name' => 'required|string|max:255',
-        'category_id' => 'required|exists:categories,id',
-        'supplier_id' => 'required|exists:suppliers,id',  // Solo un proveedor
-        'purchase_price' => 'required|numeric|min:0',
-        'sale_price' => 'required|numeric|min:0',
-        'stock' => 'required|integer|min:0',
-        'stock_min' => 'required|integer|min:0',
-        'image' => 'nullable|image|max:2048|mimes:jpeg,png,jpg,gif'
-    ]);
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'purchase_price' => 'required|numeric|min:0',
+            'sale_price' => 'required|numeric|min:0|gt:purchase_price',
+            'stock' => 'required|integer|min:0',
+            'stock_min' => 'required|integer|min:0',
+            'image' => 'nullable|image|max:2048|mimes:jpeg,png,jpg,gif'
+        ]);
 
-    // Procesar imagen
-    $imagePath = null;
-    if ($request->hasFile('image')) {
-        $imagePath = $this->uploadImage($request->file('image'));
+        // Verificar si el archivo de imagen está presente
+        if ($request->hasFile('image')) {
+            \Log::info('Imagen encontrada en la solicitud.');
+            $imagePath = $this->uploadImage($request->file('image'));
+
+            if ($imagePath) {
+                \Log::info('Imagen subida a: ' . $imagePath);
+
+                if (Storage::disk('public')->exists($imagePath)) {
+                    \Log::info('La imagen existe en el sistema de archivos.');
+                } else {
+                    \Log::warning('La imagen no se encontró en el sistema de archivos después de la subida.');
+                }
+            } else {
+                \Log::warning('El método uploadImage devolvió null.');
+            }
+        } else {
+            \Log::info('No se ha subido ninguna imagen.');
+            $imagePath = null;
+        }
+
+        // Crear el producto y asociar el proveedor
+        $product = Product::create(array_merge(
+            $request->only(['name', 'category_id', 'purchase_price', 'sale_price', 'stock', 'stock_min', 'supplier_id']),
+            ['image_path' => $imagePath]
+        ));
+
+        return redirect()->route('products.index')->with('success', 'Producto creado con éxito.');
     }
-
-    // Crear el producto
-    $product = Product::create(array_merge(
-        $request->only(['name', 'category_id', 'purchase_price', 'sale_price', 'stock', 'stock_min']),
-        ['image_path' => $imagePath]
-    ));
-
-    // Asociar un proveedor
-    if ($request->has('supplier_id')) {
-        $product->suppliers()->sync([$request->supplier_id]);  // Asociar un solo proveedor
-    }
-
-    return redirect()->route('products.index')->with('success', 'Producto creado con éxito.');
-    }
-
 
     /**
      * Mostrar el formulario para editar un producto existente.
@@ -87,40 +94,53 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-    $validatedData = $request->validate([
-        'name' => 'required|string|max:255',
-        'category_id' => 'required|exists:categories,id',
-        'supplier_id' => 'required|exists:suppliers,id',  // Solo un proveedor
-        'purchase_price' => 'required|numeric|min:0',
-        'sale_price' => 'required|numeric|min:0',
-        'stock' => 'required|integer|min:0',
-        'stock_min' => 'required|integer|min:0',
-        'image' => 'nullable|image|max:2048|mimes:jpeg,png,jpg,gif'
-    ]);
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'purchase_price' => 'required|numeric|min:0',
+            'sale_price' => 'required|numeric|min:0|gt:purchase_price',
+            'stock' => 'required|integer|min:0',
+            'stock_min' => 'required|integer|min:0',
+            'image' => 'nullable|image|max:2048|mimes:jpeg,png,jpg,gif'
+        ]);
 
-    // Si se sube una nueva imagen
-    if ($request->hasFile('image')) {
-        // Eliminar imagen anterior
-        $this->deleteExistingImage($product->image_path);
+        // Si se sube una nueva imagen
+        if ($request->hasFile('image')) {
+            \Log::info('Nueva imagen encontrada en la solicitud.');
 
-        // Guardar nueva imagen
-        $imagePath = $this->uploadImage($request->file('image'));
-        $product->image_path = $imagePath;
+            // Eliminar imagen anterior
+            if ($this->deleteExistingImage($product->image_path)) {
+                \Log::info('Imagen anterior eliminada: ' . $product->image_path);
+            } else {
+                \Log::warning('No se pudo eliminar la imagen anterior: ' . $product->image_path);
+            }
+
+            // Guardar nueva imagen
+            $imagePath = $this->uploadImage($request->file('image'));
+
+            if ($imagePath) {
+                \Log::info('Nueva imagen subida a: ' . $imagePath);
+
+                if (Storage::disk('public')->exists($imagePath)) {
+                    \Log::info('La nueva imagen existe en el sistema de archivos.');
+                } else {
+                    \Log::warning('La nueva imagen no se encontró en el sistema de archivos después de la subida.');
+                }
+
+                $validatedData['image_path'] = $imagePath;
+            } else {
+                \Log::warning('El método uploadImage devolvió null para la nueva imagen.');
+            }
+        } else {
+            \Log::info('No se ha subido ninguna nueva imagen.');
+        }
+
+        // Actualizar datos del producto
+        $product->update($validatedData);
+
+        return redirect()->route('products.index')->with('success', 'Producto actualizado correctamente.');
     }
-
-    // Actualizar datos del producto
-    $product->update($request->only([
-        'name', 'category_id', 'purchase_price', 'sale_price', 'stock', 'stock_min'
-    ]));
-
-    // Asociar un solo proveedor
-    if ($request->has('supplier_id')) {
-        $product->suppliers()->sync([$request->supplier_id]);  // Asociar un solo proveedor
-    }
-
-    return redirect()->route('products.index')->with('success', 'Producto actualizado correctamente.');
-    }
-
 
     /**
      * Eliminar un producto de la base de datos.
@@ -128,12 +148,17 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         // Eliminar la imagen del producto si existe
-        $this->deleteExistingImage($product->image_path);
+        if ($this->deleteExistingImage($product->image_path)) {
+            \Log::info('Imagen eliminada: ' . $product->image_path);
+        } else {
+            \Log::warning('No se pudo eliminar la imagen: ' . $product->image_path);
+        }
 
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Producto eliminado con éxito.');
     }
+
 
     /**
      * Buscar productos por nombre o categoría.

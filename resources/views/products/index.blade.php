@@ -1,5 +1,3 @@
-<!-- resources/views/products/index.blade.php -->
-
 @extends('layouts.app')
 
 @section('page-title', 'Productos')
@@ -38,13 +36,13 @@
 
                     <!-- Tabla de Productos -->
                     <div class="table-responsive p-0 mx-4">
-                        <table id="productsTable" class="table align-items-center mb-0">
+                        <table id="productsTable" class="table table-striped table-hover align-items-center mb-0">
                             <thead>
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Imagen</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nombre</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Categoría</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Proveedor(s)</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Proveedor</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Precio de Compra</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Precio de Venta</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Stock</th>
@@ -56,11 +54,7 @@
                                 <tr>
                                     <td>
                                         <div class="d-flex px-2 py-1">
-                                            @if($product->image_path)
-                                                <img src="{{ asset('storage/' . $product->image_path) }}" class="avatar me-3" alt="Imagen de {{ $product->name }}">
-                                            @else
-                                                <img src="{{ asset('assets/img/default-image.png') }}" class="avatar me-3" alt="Imagen por defecto">
-                                            @endif
+                                            <img src="{{ $product->image_path ? asset('storage/' . $product->image_path) : asset('assets/img/producto-sin-imagen.jpg') }}" class="avatar me-3" alt="Imagen de {{ $product->name }}">
                                         </div>
                                     </td>
                                     <td>
@@ -70,14 +64,13 @@
                                         <p class="text-xs font-weight-bold mb-0">{{ $product->category->name }}</p>
                                     </td>
                                     <td>
-                                        @if($product->suppliers->isNotEmpty())
-                                            @foreach($product->suppliers as $supplier)
-                                                <span class="badge bg-secondary text-light badge-supplier">{{ $supplier->name }}</span>
-                                            @endforeach
+                                        @if($product->supplier)
+                                            <span class="badge bg-secondary text-light badge-supplier">{{ $product->supplier->name }}</span>
                                         @else
                                             <span class="badge bg-warning text-dark">No asignado</span>
                                         @endif
                                     </td>
+
                                     <td>
                                         <p class="text-xs font-weight-bold mb-0">${{ number_format($product->purchase_price, 2) }}</p>
                                     </td>
@@ -95,14 +88,15 @@
                                                 data-id="{{ $product->id }}"
                                                 data-name="{{ $product->name }}"
                                                 data-category="{{ $product->category->name }}"
-                                                data-suppliers="{{ $product->suppliers->pluck('name')->toJson() }}"
+                                                data-supplier="{{ $product->supplier ? $product->supplier->name : '' }}"
                                                 data-purchase_price="{{ number_format($product->purchase_price, 2) }}"
                                                 data-sale_price="{{ number_format($product->sale_price, 2) }}"
                                                 data-stock="{{ $product->stock }}"
                                                 data-stock_min="{{ $product->stock_min }}"
-                                                data-image_path="{{ $product->image_path ? asset('storage/' . $product->image_path) : asset('assets/img/default-image.png') }}">
-                                            <i class="fas fa-eye me-1"></i> Ver
+                                                data-image_path="{{ $product->image_path ? $product->image_path : '' }}">
+                                            <i class="fas fa-eye custom-icon-size"></i>
                                         </button>
+
 
                                         <!-- Botón Editar -->
                                         <button class="btn btn-success btn-sm edit-button"
@@ -115,10 +109,11 @@
                                                 data-sale_price="{{ $product->sale_price }}"
                                                 data-stock="{{ $product->stock }}"
                                                 data-stock_min="{{ $product->stock_min }}"
-                                                data-supplier_ids="{{ $product->suppliers->pluck('id')->toJson() }}"
-                                                data-image_path="{{ $product->image_path ? asset('storage/' . $product->image_path) : asset('assets/img/default-image.png') }}">
-                                            <i class="fas fa-edit me-1"></i> Editar
+                                                data-supplier_id="{{ $product->supplier ? $product->supplier->id : '' }}"
+                                                data-image_path="{{ $product->image_path ? $product->image_path : '' }}">
+                                            <i class="fas fa-edit custom-icon-size"></i>
                                         </button>
+
 
                                         <!-- Botón Eliminar -->
                                         <button class="btn btn-danger btn-sm delete-button"
@@ -126,9 +121,11 @@
                                                 data-bs-target="#deleteProductModal"
                                                 data-id="{{ $product->id }}"
                                                 data-name="{{ $product->name }}">
-                                            <i class="fas fa-trash me-1"></i> Eliminar
+                                            <i class="fas fa-trash custom-icon-size"></i>
                                         </button>
                                     </td>
+
+
                                 </tr>
                                 @empty
                                 <tr>
@@ -137,10 +134,9 @@
                                 @endforelse
                             </tbody>
                         </table>
+
                     </div>
                 </div>
-
-               
             </div>
         </div>
     </div>
@@ -164,7 +160,7 @@
                     <div class="col-md-8">
                         <h4 id="view_name"></h4>
                         <p><strong>Categoría:</strong> <span id="view_category"></span></p>
-                        <p><strong>Proveedor(s):</strong> <span id="view_suppliers"></span></p>
+                        <p><strong>Proveedor:</strong> <span id="view_supplier"></span></p>
                         <p><strong>Precio de Compra:</strong> $<span id="view_purchase_price"></span></p>
                         <p><strong>Precio de Venta:</strong> $<span id="view_sale_price"></span></p>
                         <p><strong>Stock:</strong> <span id="view_stock"></span></p>
@@ -209,15 +205,15 @@
                             </select>
                         </div>
 
-                        <!-- Proveedores -->
+                        <!-- Proveedor -->
                         <div class="col-md-6">
-                            <label for="edit_supplier_ids" class="form-label">Proveedor(es) <span class="text-danger">*</span></label>
-                            <select class="form-select" id="edit_supplier_ids" name="suppliers[]" multiple required>
+                            <label for="edit_supplier_id" class="form-label">Proveedor <span class="text-danger">*</span></label>
+                            <select class="form-select" id="edit_supplier_id" name="supplier_id" required>
+                                <option value="" selected disabled>Selecciona un proveedor</option>
                                 @foreach($suppliers as $supplier)
                                     <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
                                 @endforeach
                             </select>
-                            <small class="text-muted">Mantén presionada la tecla Ctrl (Windows) o Cmd (Mac) para seleccionar múltiples proveedores.</small>
                         </div>
 
                         <!-- Precio de Compra -->
@@ -297,30 +293,63 @@
 
 @push('scripts')
 <script>
-    $(document).ready(function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Inicializar DataTable
         $('#productsTable').DataTable({
-            "paging": true, // Activar paginación
-            "info": true,    // Activar información de la tabla
-            "searching": true, // Activar búsqueda
-            "ordering": true,  // Activar ordenamiento
-            "pageLength": 10, // Número de registros por página
-            "lengthChange": false, // Ocultar la opción de cambiar el número de registros por página
+            "paging": true,
+            "pageLength": 10,
+            "info": true,
+            "searching": true,
             "columnDefs": [
-                { "orderable": false, "targets": [0,3,7] } // Desactivar ordenamiento en columnas específicas
+                { "orderable": false, "targets": [0,3,7] }
             ],
             "language": {
                 "search": "Buscar:",
+                "paginate": {
+                    "first": "Primero",
+                    "last": "Último",
+                    "next": "Siguiente",
+                    "previous": "Anterior"
+                },
                 "emptyTable": "No hay datos disponibles en la tabla",
                 "zeroRecords": "No se encontraron coincidencias",
                 "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
                 "infoEmpty": "Mostrando 0 registros",
-                "infoFiltered": "(filtrado de _MAX_ registros totales)",
-                "paginate": {
-                    "next": "Siguiente",
-                    "previous": "Anterior"
-                }
+                "infoFiltered": "(filtrado de _MAX_ registros totales)"
             }
+        });
+
+        // Modal de Ver Producto
+        var viewProductModal = document.getElementById('viewProductModal');
+        viewProductModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var name = button.getAttribute('data-name');
+            var category = button.getAttribute('data-category');
+            var supplier = button.getAttribute('data-supplier');
+            var purchase_price = button.getAttribute('data-purchase_price');
+            var sale_price = button.getAttribute('data-sale_price');
+            var stock = button.getAttribute('data-stock');
+            var stock_min = button.getAttribute('data-stock_min');
+            var image_path = button.getAttribute('data-image_path');
+
+            // Generar la URL de la imagen
+            var imageUrl = image_path ? '{{ asset('storage') }}/' + image_path : '{{ asset('assets/img/producto-sin-imagen.jpg') }}';
+
+            viewProductModal.querySelector('#view_name').textContent = name;
+            viewProductModal.querySelector('#view_category').textContent = category;
+
+            var supplierSpan = viewProductModal.querySelector('#view_supplier');
+            if(supplier){
+                supplierSpan.innerHTML = `<span class="badge bg-secondary text-light me-1">${supplier}</span>`;
+            } else {
+                supplierSpan.innerHTML = `<span class="badge bg-warning text-dark">No asignado</span>`;
+            }
+
+            viewProductModal.querySelector('#view_purchase_price').textContent = purchase_price;
+            viewProductModal.querySelector('#view_sale_price').textContent = sale_price;
+            viewProductModal.querySelector('#view_stock').textContent = stock;
+            viewProductModal.querySelector('#view_stock_min').textContent = stock_min;
+            viewProductModal.querySelector('#view_image').src = imageUrl;
         });
 
         // Modal de Editar Producto
@@ -334,8 +363,11 @@
             var sale_price = button.getAttribute('data-sale_price');
             var stock = button.getAttribute('data-stock');
             var stock_min = button.getAttribute('data-stock_min');
-            var supplier_ids = JSON.parse(button.getAttribute('data-supplier_ids'));
+            var supplier_id = button.getAttribute('data-supplier_id');
             var image_path = button.getAttribute('data-image_path');
+
+            // Generar la URL de la imagen
+            var imageUrl = image_path ? '{{ asset('storage') }}/' + image_path : '{{ asset('assets/img/producto-sin-imagen.jpg') }}';
 
             var form = editProductModal.querySelector('#editProductForm');
             form.action = "{{ url('products') }}/" + id;
@@ -346,64 +378,16 @@
             form.querySelector('#edit_sale_price').value = sale_price;
             form.querySelector('#edit_stock').value = stock;
             form.querySelector('#edit_stock_min').value = stock_min;
-            form.querySelector('#current_image').src = image_path;
+            form.querySelector('#current_image').src = imageUrl;
 
-            // Seleccionar los proveedores correspondientes
-            var supplierSelect = form.querySelector('#edit_supplier_ids');
-            Array.from(supplierSelect.options).forEach(function(option) {
-                option.selected = supplier_ids.includes(parseInt(option.value));
-            });
+            // Seleccionar el proveedor correspondiente
+            var supplierSelect = form.querySelector('#edit_supplier_id');
+            supplierSelect.value = supplier_id;
 
             // Resetear la previsualización de la nueva imagen
             form.querySelector('#edit_image').value = '';
             form.querySelector('#edit_imagePreview').style.display = 'none';
             form.querySelector('#edit_imagePreview').src = '';
-        });
-
-        // Modal de Eliminar Producto
-        var deleteProductModal = document.getElementById('deleteProductModal');
-        deleteProductModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget;
-            var id = button.getAttribute('data-id');
-            var name = button.getAttribute('data-name');
-
-            var form = deleteProductModal.querySelector('#deleteProductForm');
-            form.action = "{{ url('products') }}/" + id;
-
-            deleteProductModal.querySelector('#delete_product_name').textContent = name;
-        });
-
-        // Modal de Ver Producto
-        var viewProductModal = document.getElementById('viewProductModal');
-        viewProductModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget;
-            var name = button.getAttribute('data-name');
-            var category = button.getAttribute('data-category');
-            var suppliers = JSON.parse(button.getAttribute('data-suppliers'));
-            var purchase_price = button.getAttribute('data-purchase_price');
-            var sale_price = button.getAttribute('data-sale_price');
-            var stock = button.getAttribute('data-stock');
-            var stock_min = button.getAttribute('data-stock_min');
-            var image_path = button.getAttribute('data-image_path');
-
-            viewProductModal.querySelector('#view_name').textContent = name;
-            viewProductModal.querySelector('#view_category').textContent = category;
-
-            var suppliersSpan = viewProductModal.querySelector('#view_suppliers');
-            suppliersSpan.innerHTML = '';
-            if(suppliers.length > 0){
-                suppliers.forEach(function(supplier){
-                    suppliersSpan.innerHTML += `<span class="badge bg-secondary text-light me-1">${supplier}</span>`;
-                });
-            } else {
-                suppliersSpan.innerHTML = `<span class="badge bg-warning text-dark">No asignado</span>`;
-            }
-
-            viewProductModal.querySelector('#view_purchase_price').textContent = purchase_price;
-            viewProductModal.querySelector('#view_sale_price').textContent = sale_price;
-            viewProductModal.querySelector('#view_stock').textContent = stock;
-            viewProductModal.querySelector('#view_stock_min').textContent = stock_min;
-            viewProductModal.querySelector('#view_image').src = image_path;
         });
 
         // Previsualización de Nueva Imagen en el Modal de Editar
@@ -422,6 +406,19 @@
                 editImagePreview.style.display = 'none';
                 editImagePreview.src = '';
             }
+        });
+
+        // Modal para Eliminar Producto
+        var deleteProductModal = document.getElementById('deleteProductModal');
+        deleteProductModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            var name = button.getAttribute('data-name');
+
+            var form = deleteProductModal.querySelector('#deleteProductForm');
+            form.action = "{{ url('products') }}/" + id;
+
+            deleteProductModal.querySelector('#delete_product_name').textContent = name;
         });
     });
 </script>

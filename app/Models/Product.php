@@ -12,6 +12,7 @@ class Product extends Model
     protected $fillable = [
         'name',
         'category_id',
+        'supplier_id', // Añadir este campo
         'purchase_price',
         'sale_price',
         'stock',
@@ -27,10 +28,12 @@ class Product extends Model
 
 
    //relacion un proveedor a muchos productos
-    public function suppliers()
+   // En el modelo Product.php
+    public function supplier()
     {
-    return $this->belongsToMany(Supplier::class);
+    return $this->belongsTo(Supplier::class);
     }
+
 
 
     // Relación con entradas de stock
@@ -64,4 +67,5 @@ class Product extends Model
             $this->increment('stock', $quantity);
         }
     }
+
 }
