@@ -13,7 +13,7 @@
             description="Usuarios registrados"
             icon="people"
             color="bg-gradient-primary"
-            textColor="text-white"
+            textColor="text-dark"
         />
 
         <x-dashboard-card
@@ -22,7 +22,7 @@
             description="Productos en inventario"
             icon="inventory_2"
             color="bg-gradient-success"
-            textColor="text-white"
+            textColor="text-dark"
         />
 
         <x-dashboard-card
@@ -40,7 +40,7 @@
             description="Inversión en inventario"
             icon="shopping_cart"
             color="bg-gradient-danger"
-            textColor="text-white"
+            textColor="text-dark"
         />
 
         <x-dashboard-card
@@ -49,7 +49,7 @@
             description="Ganancias"
             icon="monetization_on"
             color="bg-gradient-info"
-            textColor="text-white"
+            textColor="text-dark"
         />
     </div>
 

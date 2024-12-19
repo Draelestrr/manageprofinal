@@ -1,10 +1,13 @@
-{{-- resources/views/components/dashboard-card.blade.php --}}
 <div class="col-xl-3 col-sm-6 mb-4">
     <div class="card h-100 shadow-sm">
         <div class="card-header p-3 pt-2 position-relative">
-            <div class="text-end">
-                <p class="text-sm mb-0 text-capitalize {{ $textColor }}">{{ $title }}</p>
-                <h4 class="mb-0 {{ $textColor }}">{{ $value }}</h4>
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <h4 class="mb-0 {{ $textColor }}">{{ $value }}</h4>
+                </div>
+                <div>
+                    <p class="text-sm mb-0 text-capitalize {{ $textColor }}">{{ $title }}</p>
+                </div>
             </div>
             <div class="icon icon-shape {{ $color }} shadow text-center border-radius-xl position-absolute top-0 end-0 mt-2 me-2">
                 <i class="material-symbols-rounded text-white">{{ $icon }}</i>
